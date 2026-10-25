@@ -318,6 +318,55 @@ body::before{animation-duration:24s!important;animation-timing-function:cubic-be
 .fx-cursor{transition:opacity .5s ease!important}
 .fx-ripple{animation-duration:.9s!important}
 .hero h1,.hero h2,.hero p{animation-duration:8s!important}
+
+/* Added feature: live search for social and music links */
+.link-search-wrap{width:min(100%,720px);margin:0 auto 16px;padding:0 2px}
+.link-search{display:block;width:100%;padding:14px 16px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(255,255,255,.045);color:#fff;font:inherit;font-size:14px;outline:none;transition:border-color .2s,background .2s,box-shadow .2s}
+.link-search::placeholder{color:rgba(255,255,255,.48)}
+.link-search:focus{border-color:rgba(255,70,70,.7);background:rgba(255,255,255,.07);box-shadow:0 0 0 3px rgba(255,70,70,.1)}
+.link-search-status{min-height:18px;margin:8px 4px 0;color:rgba(255,255,255,.62);font-size:11px;font-weight:500}
+.link-card.search-hidden{display:none!important}
+@media(max-width:600px){.link-search{font-size:13px;padding:12px 14px}}
+
+
+/* Compact animated menu for the former top panels */
+.wrap{position:relative}
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.menu-toggle{width:46px;height:46px;flex:0 0 46px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;border:1px solid rgba(255,45,90,.38);border-radius:15px;background:rgba(14,14,20,.82);color:#fff;cursor:pointer;position:relative;z-index:82;box-shadow:0 5px 20px rgba(255,20,70,.08);-webkit-tap-highlight-color:transparent}
+.menu-toggle span{display:block;width:19px;height:2px;border-radius:2px;background:currentColor;transition:transform .24s ease,opacity .18s ease,width .24s ease}
+.menu-toggle[aria-expanded="true"] span:first-child{transform:translateY(7px) rotate(45deg)}
+.menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;width:5px}
+.menu-toggle[aria-expanded="true"] span:last-child{transform:translateY(-7px) rotate(-45deg)}
+.site-menu{position:absolute;z-index:81;top:64px;left:0;right:0;padding:18px;border:1px solid rgba(255,55,95,.24);border-radius:22px;background:rgba(9,9,14,.97);box-shadow:0 18px 48px rgba(0,0,0,.38),0 0 28px rgba(255,20,70,.08);opacity:0;visibility:hidden;transform:translateY(-8px) scale(.985);transform-origin:top right;transition:opacity .2s ease,transform .2s ease,visibility .2s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.site-menu.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.menu-heading{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:2px;color:#a8a8b2;margin:0 2px 12px}
+.menu-heading-mark{color:#ff456c;font-size:17px}
+.site-menu .ultra-controls{margin:0 auto 10px;gap:8px}
+.site-menu .visitor-card{margin:8px auto 0}
+.menu-backdrop{position:fixed;inset:0;z-index:79;background:rgba(0,0,0,.36);opacity:0;transition:opacity .2s ease}
+.menu-backdrop.show{opacity:1}
+@media(max-width:700px){
+  .top{position:relative;z-index:80}
+  .site-menu{position:absolute;left:0;right:0;padding:14px;border-radius:18px}
+  .site-menu .ultra-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-content:stretch}
+  .site-menu .ultra-btn{min-height:42px}
+  .site-menu .live-chip{justify-content:center;grid-column:1/-1}
+  .menu-toggle{width:44px;height:44px;flex-basis:44px}
+}
+/* Reduce costly visual effects on touch/mobile devices while keeping the design */
+@media(hover:none),(max-width:700px){
+  html{scroll-behavior:auto}
+  .fx-particles,.fx-scan,.fx-cursor,body::after{display:none!important}
+  .app-icon::after{animation:none!important;display:none!important}
+  .avatar,.hero h1,.hero::after,.live-dot,.fx-particle,.ambient,.ambient2{animation:none!important}
+  .link-card,.glass,.site-menu,.ultra-btn,.theme-toggle,.back-top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .link-card::before{display:none!important}
+  .link-card::after{display:none!important}
+  .link-card,.ultra-btn,.theme-toggle{transition:background-color .16s ease,border-color .16s ease!important}
+  .hero .avatar{filter:none!important}
+}
+@media(prefers-reduced-motion:reduce){.site-menu,.menu-toggle span,.menu-backdrop{transition:none!important}}
+
 </style>
 
 <style>
@@ -336,7 +385,7 @@ body::before{animation-duration:24s!important;animation-timing-function:cubic-be
 body{--mx:50vw;--my:50vh}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.0;background:radial-gradient(circle 260px at var(--mx) var(--my),rgba(255,25,75,.12),transparent 70%);transition:opacity .3s}
 body.fx-on::after{opacity:1}
-.top{position:relative;z-index:50}
+.top{position:relative;z-index:80}
 .ultra-controls{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin:8px auto 14px}
 .ultra-btn{border:1px solid rgba(255,45,90,.35);background:rgba(15,15,20,.72);color:#fff;border-radius:999px;padding:9px 13px;font:600 12px inherit;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 0 18px rgba(255,20,70,.08);transition:.2s;user-select:none}
 .ultra-btn:hover{transform:translateY(-2px);border-color:rgba(255,60,105,.8);box-shadow:0 0 25px rgba(255,20,70,.22)}
@@ -380,15 +429,21 @@ body.chaos .ambient,body.chaos .ambient2{animation-duration:4s!important}
 <main class="wrap">
 <header class="top">
   <div class="logo">Mr<span>TSyler</span></div>
+  <button class="menu-toggle" id="menuToggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="siteMenu">
+    <span></span><span></span><span></span>
+  </button>
 </header>
-
-<div class="ultra-controls" aria-label="Настройки сайта">
-  <button class="ultra-btn active" id="soundBtn" type="button">🔊 Звук</button>
-  <button class="ultra-btn active" id="fxBtn" type="button">✨ Эффекты</button>
-  <button class="ultra-btn" id="matrixBtn" type="button">◈ Matrix</button>
-  <span class="live-chip"><i class="live-dot"></i><span id="liveClock">ONLINE</span></span>
-</div>
-<div class="visitor-card">Ты посетитель №<b id="visitorNumber">—</b> · <span id="tipText">Нажми на любую карточку ✦</span></div>
+<div class="menu-backdrop" id="menuBackdrop" hidden></div>
+<nav class="site-menu" id="siteMenu" aria-label="Меню сайта" aria-hidden="true" inert>
+  <div class="menu-heading"><span>НАСТРОЙКИ САЙТА</span><span class="menu-heading-mark">✦</span></div>
+  <div class="ultra-controls" aria-label="Настройки сайта">
+    <button class="ultra-btn active" id="soundBtn" type="button">🔊 Звук</button>
+    <button class="ultra-btn active" id="fxBtn" type="button">✨ Эффекты</button>
+    <button class="ultra-btn" id="matrixBtn" type="button">◈ Matrix</button>
+    <span class="live-chip"><i class="live-dot"></i><span id="liveClock">ONLINE</span></span>
+  </div>
+  <div class="visitor-card">Ты посетитель №<b id="visitorNumber">—</b> · <span id="tipText">Нажми на любую карточку ✦</span></div>
+</nav>
 <div class="scroll-progress" id="scrollProgress"></div>
 <div class="matrix-mode" id="matrixMode"></div>
 <button class="back-top" id="backTop" aria-label="Наверх">↑</button>
@@ -411,6 +466,11 @@ body.chaos .ambient,body.chaos .ambient2{animation-duration:4s!important}
 </section>
 
 <div class="section-head"><h2>🔗 &nbsp;Ссылки</h2><span>Выбери свою платформу</span></div>
+<div class="link-search-wrap">
+  <label for="linkSearch" class="sr-only">Поиск по ссылкам</label>
+  <input id="linkSearch" class="link-search" type="search" placeholder="⌕ Поиск по соцсетям и музыке…" autocomplete="off" aria-label="Поиск по соцсетям и музыке">
+  <div id="linkSearchStatus" class="link-search-status" aria-live="polite"></div>
+</div>
 <section class="links"><a class="link-card telegram" href="https://t.me/MrTSyler" target="_blank" rel="noopener noreferrer">
       <span class="app-icon" aria-hidden="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M41.7 7.1 35.5 39c-.5 2.3-1.8 2.9-3.7 1.8l-10.3-7.6-5 4.8c-.6.6-1.1 1.1-2.2 1.1l.8-10.5L34.2 12c.8-.7-.2-1.1-1.2-.4L7.1 28.1l-10.2-3.2c-2.2-.7-2.2-2.2.5-3.2L38.1 6.2c1.8-.7 3.4.4 3.6.9Z" transform="translate(5 0) scale(.82)"/></svg></span>
       <span class="link-info"><strong>Telegram</strong><small>t.me/MrTSyler</small></span>
@@ -494,6 +554,8 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
 <script>
 (() => {
   const body=document.body;
+  const lowPower = matchMedia('(hover:none), (max-width:700px), (prefers-reduced-motion: reduce)').matches;
+  if (!lowPower) {
   const particles=document.createElement('div'); particles.className='fx-particles';
   for(let i=0;i<28;i++){
     const p=document.createElement('span'); p.className='fx-particle';
@@ -508,6 +570,7 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
   body.appendChild(particles);
   const scan=document.createElement('div'); scan.className='fx-scan'; body.appendChild(scan);
   const cursor=document.createElement('div'); cursor.className='fx-cursor'; body.appendChild(cursor);
+  }
   let targetX=window.innerWidth/2,targetY=window.innerHeight/2,currentX=targetX,currentY=targetY;
   window.addEventListener('pointermove',e=>{
     targetX=e.clientX; targetY=e.clientY;
@@ -515,13 +578,15 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
     document.documentElement.style.setProperty('--my',e.clientY+'px');
     cursor.style.opacity='.72';
   },{passive:true});
-  function smoothCursor(){
-    currentX += (targetX-currentX)*0.10;
-    currentY += (targetY-currentY)*0.10;
-    cursor.style.left=currentX+'px'; cursor.style.top=currentY+'px';
-    requestAnimationFrame(smoothCursor);
+  if (!matchMedia('(hover:none), (max-width:700px), (prefers-reduced-motion: reduce)').matches) {
+    function smoothCursor(){
+      currentX += (targetX-currentX)*0.10;
+      currentY += (targetY-currentY)*0.10;
+      cursor.style.left=currentX+'px'; cursor.style.top=currentY+'px';
+      requestAnimationFrame(smoothCursor);
+    }
+    smoothCursor();
   }
-  smoothCursor();
   document.addEventListener('pointerdown',e=>{
     const el=e.target.closest('.link-card,.subscribe,button,a'); if(!el) return;
     const r=el.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
@@ -562,7 +627,7 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
   matrixBtn.onclick=()=>{matrix.classList.toggle('on');matrixBtn.classList.toggle('active',matrix.classList.contains('on'));tone(matrix.classList.contains('on')?160:90,.16,'sawtooth',.025)};
   document.body.classList.add('fx-on');
   // clock / online indicator
-  const clock=$('#liveClock'); function tick(){const d=new Date();clock.textContent='ONLINE · '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});} tick();setInterval(tick,1000);
+  const clock=$('#liveClock'); let clockTimer; function tick(){const d=new Date();clock.textContent='ONLINE · '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});} function startClock(){if(!clockTimer){tick();clockTimer=setInterval(tick,30000)}} function stopClock(){clearInterval(clockTimer);clockTimer=null} startClock(); document.addEventListener('visibilitychange',()=>document.hidden?stopClock():startClock());
   // progress + back to top
   const progress=$('#scrollProgress'),back=$('#backTop');
   addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;progress.style.width=(h>0?scrollY/h*100:0)+'%';back.classList.toggle('show',scrollY>450)},{passive:true});
@@ -584,5 +649,69 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
   const footer=$('.footer'); if(footer){const b=document.createElement('button');b.className='ultra-btn';b.type='button';b.style.marginTop='12px';b.textContent='🔗 Скопировать сайт';b.onclick=async()=>{try{await navigator.clipboard.writeText(location.href);showToast('Ссылка скопирована ✦');tone(720,.1)}catch(e){showToast('Скопируй адрес из браузера')}};footer.appendChild(document.createElement('br'));footer.appendChild(b)}
 })();
 </script>
+
+<script>
+(() => {
+  const input = document.getElementById('linkSearch');
+  const status = document.getElementById('linkSearchStatus');
+  const cards = [...document.querySelectorAll('.links .link-card')];
+  if (!input || !status || !cards.length) return;
+
+  const normalize = value => value.toLocaleLowerCase('ru-RU').trim();
+  function filterLinks() {
+    const query = normalize(input.value);
+    let shown = 0;
+    cards.forEach(card => {
+      const matches = !query || normalize(card.innerText + ' ' + card.href).includes(query);
+      card.classList.toggle('search-hidden', !matches);
+      if (matches) shown++;
+    });
+    status.textContent = query
+      ? (shown ? `Найдено ссылок: ${shown}` : 'Ничего не найдено. Попробуй другое название.')
+      : '';
+  }
+  input.addEventListener('input', filterLinks);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      input.value = '';
+      filterLinks();
+      input.blur();
+    }
+  });
+})();
+</script>
+
+
+<script>
+(() => {
+  const toggle = document.getElementById('menuToggle');
+  const menu = document.getElementById('siteMenu');
+  const backdrop = document.getElementById('menuBackdrop');
+  if (!toggle || !menu || !backdrop) return;
+  let closeTimer;
+  function setOpen(open) {
+    clearTimeout(closeTimer);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+    menu.classList.toggle('open', open);
+    menu.setAttribute('aria-hidden', String(!open));
+    menu.inert = !open;
+    backdrop.hidden = !open;
+    requestAnimationFrame(() => backdrop.classList.toggle('show', open));
+    if (open) {
+      const firstButton = menu.querySelector('button');
+      if (firstButton && matchMedia('(max-width: 700px)').matches) firstButton.focus({preventScroll:true});
+    } else {
+      toggle.focus({preventScroll:true});
+    }
+  }
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  backdrop.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false); });
+  menu.addEventListener('click', event => { if (event.target.closest('button')) { /* Keep menu open so multiple settings can be adjusted. */ } });
+  window.addEventListener('resize', () => { if (window.innerWidth > 700 && toggle.getAttribute('aria-expanded') === 'true') setOpen(false); }, {passive:true});
+})();
+</script>
+
 </body>
 </html>
