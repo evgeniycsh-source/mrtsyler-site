@@ -425,6 +425,7 @@ body.chaos .ambient,body.chaos .ambient2{animation-duration:4s!important}
 </style>
 </head>
 <body>
+<div class="side-portraits" aria-hidden="true"><img class="side-portrait side-portrait-left" src="mrtsyler-side.webp" alt=""><img class="side-portrait side-portrait-right" src="mrtsyler-side.webp" alt=""></div>
 <div class="ambient"></div><div class="ambient2"></div>
 <main class="wrap">
 <header class="top">
@@ -551,102 +552,264 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
 
 
 
-<script>
-(() => {
-  const body=document.body;
-  const lowPower = matchMedia('(hover:none), (max-width:700px), (prefers-reduced-motion: reduce)').matches;
-  if (!lowPower) {
-  const particles=document.createElement('div'); particles.className='fx-particles';
-  for(let i=0;i<28;i++){
-    const p=document.createElement('span'); p.className='fx-particle';
-    p.style.left=(Math.random()*100)+'%';
-    p.style.bottom=(-10-Math.random()*30)+'vh';
-    p.style.setProperty('--dx',((Math.random()-.5)*180)+'px');
-    p.style.animationDuration=(7+Math.random()*10)+'s';
-    p.style.animationDelay=(-Math.random()*14)+'s';
-    p.style.width=p.style.height=(1.5+Math.random()*3)+'px';
-    particles.appendChild(p);
-  }
-  body.appendChild(particles);
-  const scan=document.createElement('div'); scan.className='fx-scan'; body.appendChild(scan);
-  const cursor=document.createElement('div'); cursor.className='fx-cursor'; body.appendChild(cursor);
-  }
-  let targetX=window.innerWidth/2,targetY=window.innerHeight/2,currentX=targetX,currentY=targetY;
-  window.addEventListener('pointermove',e=>{
-    targetX=e.clientX; targetY=e.clientY;
-    document.documentElement.style.setProperty('--mx',e.clientX+'px');
-    document.documentElement.style.setProperty('--my',e.clientY+'px');
-    cursor.style.opacity='.72';
-  },{passive:true});
-  if (!matchMedia('(hover:none), (max-width:700px), (prefers-reduced-motion: reduce)').matches) {
-    function smoothCursor(){
-      currentX += (targetX-currentX)*0.10;
-      currentY += (targetY-currentY)*0.10;
-      cursor.style.left=currentX+'px'; cursor.style.top=currentY+'px';
-      requestAnimationFrame(smoothCursor);
+<script>(() => {
+  const body = document.body;
+  const motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const desktop = matchMedia('(hover:hover) and (min-width: 900px)').matches;
+  // Decorative particles are intentionally limited and omitted on touch devices.
+  if (desktop && motionOK) {
+    const particles = document.createElement('div');
+    particles.className = 'fx-particles';
+    const count = 10;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      p.className = 'fx-particle';
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.bottom = (-10 - Math.random() * 25) + 'vh';
+      p.style.setProperty('--dx', ((Math.random() - .5) * 100) + 'px');
+      p.style.animationDuration = (10 + Math.random() * 8) + 's';
+      p.style.animationDelay = (-Math.random() * 12) + 's';
+      const size = 1 + Math.random() * 2;
+      p.style.width = p.style.height = size + 'px';
+      particles.appendChild(p);
     }
-    smoothCursor();
+    body.appendChild(particles);
+    const scan = document.createElement('div');
+    scan.className = 'fx-scan';
+    body.appendChild(scan);
   }
-  document.addEventListener('pointerdown',e=>{
-    const el=e.target.closest('.link-card,.subscribe,button,a'); if(!el) return;
-    const r=el.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
-    const rip=document.createElement('span'); rip.className='fx-ripple'; rip.style.left=x+'px'; rip.style.top=y+'px'; el.appendChild(rip);
-    setTimeout(()=>rip.remove(),700);
+
+  const cards = [...document.querySelectorAll('.link-card')];
+  cards.forEach((card, i) => {
+    card.style.setProperty('--i', i);
+    if (matchMedia('(hover:hover) and (min-width: 900px)').matches) card.classList.add('fx-reveal');
   });
-  const cards=[...document.querySelectorAll('.link-card')];
-  cards.forEach((c,i)=>c.style.setProperty('--i',i));
-  const reveal=[...document.querySelectorAll('.link-card,.subscribe,.hero')];
-  reveal.forEach(el=>el.classList.add('fx-reveal'));
-  const io=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('fx-visible');io.unobserve(en.target)}}),{threshold:.08});
-  reveal.forEach(el=>io.observe(el));
-  // subtle 3D tilt on desktop
-  if(matchMedia('(hover:hover)').matches){
-    cards.forEach(card=>card.addEventListener('pointermove',e=>{
-      const r=card.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-      card.style.transform=`perspective(1000px) rotateX(${(-y*1.35).toFixed(2)}deg) rotateY(${(x*1.8).toFixed(2)}deg) translateY(-3px) scale(1.012)`;
-    },{passive:true}));
-    cards.forEach(card=>card.addEventListener('pointerleave',()=>{card.style.transform='';},{passive:true}));
+  if (matchMedia('(hover:hover) and (min-width: 900px)').matches) document.querySelectorAll('.subscribe,.hero').forEach(el => el.classList.add('fx-reveal'));
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fx-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .06, rootMargin: '0px 0px 40px 0px' });
+    document.querySelectorAll('.fx-reveal').forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll('.fx-reveal').forEach(el => el.classList.add('fx-visible'));
   }
-})();
-</script>
+
+  // Lightweight tilt only on desktop; no continuous animation loop or global pointer tracking.
+  if (desktop && motionOK) {
+    cards.forEach(card => {
+      let lastUpdate = 0;
+      card.addEventListener('pointermove', e => {
+        const now = performance.now();
+        if (now - lastUpdate < 32) return;
+        lastUpdate = now;
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - .5;
+        const y = (e.clientY - r.top) / r.height - .5;
+        card.style.transform = `perspective(800px) rotateX(${(-y * 1.1).toFixed(1)}deg) rotateY(${(x * 1.4).toFixed(1)}deg) translateY(-2px)`;
+      }, { passive: true });
+      card.addEventListener('pointerleave', () => { card.style.transform = ''; }, { passive: true });
+    });
+  }
+})();</script>
 
 <script>
 (() => {
-  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const soundBtn=$('#soundBtn'), fxBtn=$('#fxBtn'), matrixBtn=$('#matrixBtn'), matrix=$('#matrixMode'), toast=$('#toast');
-  let sound=true, fx=true, audioCtx=null;
-  const tips=['Нажми на карточку — будут искры ✦','Подсказка: клавиша M включает Matrix','Клавиша S быстро включает/выключает звук','Наведи курсор на карточки — они реагируют','Попробуй нажать «Подписаться» ❤️','Сайт умеет издавать маленькие UI-звуки'];
-  $('#tipText').textContent=tips[Math.floor(Math.random()*tips.length)];
-  let visits=+(localStorage.getItem('mrtsyler_visits')||0)+1; localStorage.setItem('mrtsyler_visits',visits); $('#visitorNumber').textContent=visits.toLocaleString('ru-RU');
-  function audio(){if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); return audioCtx}
-  function tone(freq=440,dur=.07,type='sine',vol=.035){if(!sound)return;try{const c=audio(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+dur)}catch(e){}}
-  function sparkle(x,y,n=12){if(!fx)return;const box=document.querySelector('.fx-sparks')||(()=>{const d=document.createElement('div');d.className='fx-sparks';document.body.appendChild(d);return d})();for(let i=0;i<n;i++){const p=document.createElement('i');p.className='fx-spark';p.style.left=x+'px';p.style.top=y+'px';const a=Math.random()*Math.PI*2,r=35+Math.random()*110;p.style.setProperty('--sx',Math.cos(a)*r+'px');p.style.setProperty('--sy',Math.sin(a)*r+'px');box.appendChild(p);setTimeout(()=>p.remove(),750)}}
-  function showToast(t){toast.textContent=t;toast.classList.add('show');clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.classList.remove('show'),1800)}
-  soundBtn.onclick=()=>{sound=!sound;soundBtn.classList.toggle('active',sound);soundBtn.textContent=sound?'🔊 Звук':'🔇 Звук';if(sound)tone(660,.1,'sine',.05)};
-  fxBtn.onclick=()=>{fx=!fx;document.body.classList.toggle('fx-on',fx);fxBtn.classList.toggle('active',fx);fxBtn.textContent=fx?'✨ Эффекты':'💤 Эффекты';if(fx)sparkle(innerWidth/2,innerHeight/2,20)};
-  matrixBtn.onclick=()=>{matrix.classList.toggle('on');matrixBtn.classList.toggle('active',matrix.classList.contains('on'));tone(matrix.classList.contains('on')?160:90,.16,'sawtooth',.025)};
-  document.body.classList.add('fx-on');
-  // clock / online indicator
-  const clock=$('#liveClock'); let clockTimer; function tick(){const d=new Date();clock.textContent='ONLINE · '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});} function startClock(){if(!clockTimer){tick();clockTimer=setInterval(tick,30000)}} function stopClock(){clearInterval(clockTimer);clockTimer=null} startClock(); document.addEventListener('visibilitychange',()=>document.hidden?stopClock():startClock());
-  // progress + back to top
-  const progress=$('#scrollProgress'),back=$('#backTop');
-  addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;progress.style.width=(h>0?scrollY/h*100:0)+'%';back.classList.toggle('show',scrollY>450)},{passive:true});
-  back.onclick=()=>{window.scrollTo({top:0,behavior:'smooth'});tone(520,.08)};
-  // hover / click audio and spark effects
-  $$('.link-card,.subscribe,.ultra-btn').forEach(el=>{
-    el.addEventListener('mouseenter',()=>tone(280+Math.random()*100,.035,'triangle',.018),{passive:true});
-    el.addEventListener('click',e=>{tone(520,.07,'sine',.035);sparkle(e.clientX,e.clientY,10)}, {passive:true});
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => Array.from(document.querySelectorAll(selector));
+  const soundBtn = $('#soundBtn'), fxBtn = $('#fxBtn'), matrixBtn = $('#matrixBtn');
+  const matrix = $('#matrixMode'), toast = $('#toast');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const desktop = window.matchMedia('(hover: hover) and (min-width: 900px)').matches;
+  let sound = true, fx = true, audioCtx = null, toastTimer = 0, scrollQueued = false;
+
+  const tips = [
+    'Нажми на карточку — будут искры ✦',
+    'Клавиша M включает Matrix',
+    'Клавиша S включает или выключает звук',
+    'На компьютере карточки реагируют на курсор',
+    'Ищи нужную платформу через поиск ссылок',
+    'Идеи можно сохранять в инструментах сайта'
+  ];
+  const tipText = $('#tipText');
+  if (tipText) tipText.textContent = tips[Math.floor(Math.random() * tips.length)];
+
+  // Storage may be disabled in private or restricted browser modes; never let it break the page.
+  try {
+    const key = 'mrtsyler_visits';
+    const visits = Math.max(0, Number.parseInt(localStorage.getItem(key) || '0', 10) || 0) + 1;
+    localStorage.setItem(key, String(visits));
+    const visitorNumber = $('#visitorNumber');
+    if (visitorNumber) visitorNumber.textContent = visits.toLocaleString('ru-RU');
+  } catch (_) {
+    const visitorNumber = $('#visitorNumber');
+    if (visitorNumber) visitorNumber.textContent = '—';
+  }
+
+  function tone(freq = 440, duration = .06, type = 'sine', volume = .025) {
+    if (!sound || document.hidden) return;
+    try {
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      if (!audioCtx) audioCtx = new Audio();
+      if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+      const oscillator = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      oscillator.type = type;
+      oscillator.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + duration);
+      oscillator.connect(gain); gain.connect(audioCtx.destination);
+      oscillator.start(); oscillator.stop(audioCtx.currentTime + duration);
+    } catch (_) {}
+  }
+
+  function showToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function sparkle(x, y, amount = 5) {
+    if (!fx || reducedMotion || !desktop || !Number.isFinite(x) || !Number.isFinite(y)) return;
+    let holder = $('.fx-sparks');
+    if (!holder) {
+      holder = document.createElement('div');
+      holder.className = 'fx-sparks';
+      holder.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(holder);
+    }
+    const room = Math.max(0, 32 - holder.childElementCount);
+    const count = Math.min(5, amount, room);
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('i');
+      particle.className = 'fx-spark';
+      particle.style.left = `${x}px`; particle.style.top = `${y}px`;
+      const angle = Math.random() * Math.PI * 2, radius = 25 + Math.random() * 65;
+      particle.style.setProperty('--sx', `${Math.cos(angle) * radius}px`);
+      particle.style.setProperty('--sy', `${Math.sin(angle) * radius}px`);
+      holder.appendChild(particle);
+      window.setTimeout(() => particle.remove(), 720);
+    }
+  }
+
+  if (soundBtn) soundBtn.addEventListener('click', () => {
+    sound = !sound;
+    soundBtn.classList.toggle('active', sound);
+    soundBtn.textContent = sound ? '🔊 Звук' : '🔇 Звук';
+    if (sound) tone(660, .08, 'sine', .035);
+    showToast(sound ? 'Звук включён' : 'Звук выключен');
   });
-  // cursor light coordinates on cards
-  $$('.link-card').forEach(card=>card.addEventListener('pointermove',e=>{const r=card.getBoundingClientRect();card.style.setProperty('--cx',(e.clientX-r.left)+'px');card.style.setProperty('--cy',(e.clientY-r.top)+'px')},{passive:true}));
-  // click anywhere: tiny burst
-  document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a'))return;sparkle(e.clientX,e.clientY,6);tone(180+Math.random()*120,.035,'sine',.012)},{passive:true});
-  // keyboard secrets
-  addEventListener('keydown',e=>{if(e.repeat)return;const k=e.key.toLowerCase();if(k==='m')matrixBtn.click();if(k==='s')soundBtn.click();if(k==='escape'){matrix.classList.remove('on');matrixBtn.classList.remove('active')}});
-  // double click title = chaos mode
-  const title=$('.hero h1'); if(title){title.title='Двойной клик — секретный режим';title.addEventListener('dblclick',()=>{document.body.classList.toggle('chaos');sparkle(innerWidth/2,innerHeight/3,28);showToast(document.body.classList.contains('chaos')?'⚡ CHAOS MODE ON':'🌙 Спокойный режим');tone(90,.2,'square',.025)})}
-  // copy site URL with a small feedback button in footer
-  const footer=$('.footer'); if(footer){const b=document.createElement('button');b.className='ultra-btn';b.type='button';b.style.marginTop='12px';b.textContent='🔗 Скопировать сайт';b.onclick=async()=>{try{await navigator.clipboard.writeText(location.href);showToast('Ссылка скопирована ✦');tone(720,.1)}catch(e){showToast('Скопируй адрес из браузера')}};footer.appendChild(document.createElement('br'));footer.appendChild(b)}
+
+  if (fxBtn) fxBtn.addEventListener('click', () => {
+    fx = !fx;
+    document.body.classList.toggle('fx-on', fx);
+    fxBtn.classList.toggle('active', fx);
+    fxBtn.textContent = fx ? '✨ Эффекты' : '💤 Эффекты';
+    if (fx) sparkle(window.innerWidth / 2, window.innerHeight / 2, 6);
+    showToast(fx ? 'Эффекты включены' : 'Эффекты выключены');
+  });
+
+  function toggleMatrix(force) {
+    if (!matrix || !matrixBtn) return;
+    const enabled = typeof force === 'boolean' ? force : !matrix.classList.contains('on');
+    matrix.classList.toggle('on', enabled);
+    matrixBtn.classList.toggle('active', enabled);
+    showToast(enabled ? 'Matrix включён' : 'Matrix выключен');
+    tone(enabled ? 160 : 90, .1, 'sine', .018);
+  }
+  if (matrixBtn) matrixBtn.addEventListener('click', () => toggleMatrix());
+
+  document.body.classList.add('fx-on');
+  // Clock runs only while the page is visible.
+  const clock = $('#liveClock');
+  let clockTimer = 0;
+  function tickClock() {
+    if (clock) clock.textContent = `ONLINE · ${new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'})}`;
+  }
+  function startClock() { if (!clockTimer && !document.hidden) { tickClock(); clockTimer = window.setInterval(tickClock, 30000); } }
+  function stopClock() { if (clockTimer) window.clearInterval(clockTimer); clockTimer = 0; }
+  startClock();
+  document.addEventListener('visibilitychange', () => document.hidden ? stopClock() : startClock());
+
+  // One scroll update per animation frame, even during fast scrolling.
+  const progress = $('#scrollProgress'), backTop = $('#backTop');
+  function updateScroll() {
+    scrollQueued = false;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = maxScroll > 0 ? Math.min(100, Math.max(0, window.scrollY / maxScroll * 100)) : 0;
+    if (progress) progress.style.width = `${percent}%`;
+    if (backTop) backTop.classList.toggle('show', window.scrollY > 450);
+  }
+  function queueScrollUpdate() { if (!scrollQueued) { scrollQueued = true; window.requestAnimationFrame(updateScroll); } }
+  window.addEventListener('scroll', queueScrollUpdate, {passive:true});
+  window.addEventListener('resize', queueScrollUpdate, {passive:true});
+  if (backTop) backTop.addEventListener('click', () => {
+    window.scrollTo({top:0, behavior:reducedMotion ? 'auto' : 'smooth'});
+    tone(520, .06);
+  });
+  updateScroll();
+
+  if (desktop) {
+    $$('.link-card, .subscribe, .ultra-btn').forEach(element => {
+      element.addEventListener('mouseenter', () => tone(300, .025, 'sine', .009), {passive:true});
+      element.addEventListener('click', event => {
+        tone(520, .045, 'sine', .018);
+        sparkle(event.clientX, event.clientY, 4);
+      }, {passive:true});
+    });
+    document.addEventListener('pointerdown', event => {
+      if (!event.target.closest('button, a, input, textarea')) sparkle(event.clientX, event.clientY, 3);
+    }, {passive:true});
+  }
+
+  // Keyboard shortcuts do not hijack typing in forms or editable areas.
+  window.addEventListener('keydown', event => {
+    if (event.repeat || event.ctrlKey || event.altKey || event.metaKey) return;
+    const target = event.target;
+    if (target && (target.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(target.tagName))) return;
+    const key = event.key.toLowerCase();
+    if (key === 'm' && matrixBtn) toggleMatrix();
+    else if (key === 's' && soundBtn) soundBtn.click();
+    else if (key === 'escape') toggleMatrix(false);
+  });
+
+  const heroTitle = $('.hero h1');
+  if (heroTitle && desktop && !reducedMotion) heroTitle.addEventListener('dblclick', () => {
+    const enabled = document.body.classList.toggle('chaos');
+    showToast(enabled ? 'CHAOS MODE включён' : 'Спокойный режим');
+    tone(enabled ? 260 : 120, .1, 'sine', .018);
+  });
+
+  // Clipboard API with a safe fallback for non-secure contexts.
+  const footer = $('.footer');
+  if (footer) {
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button'; copyButton.className = 'ultra-btn copy-site-button';
+    copyButton.style.marginTop = '12px'; copyButton.textContent = '🔗 Скопировать сайт';
+    copyButton.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(location.href);
+        else {
+          const temporary = document.createElement('textarea');
+          temporary.value = location.href; temporary.setAttribute('readonly', '');
+          temporary.style.position = 'fixed'; temporary.style.opacity = '0';
+          document.body.appendChild(temporary); temporary.select();
+          const copied = document.execCommand('copy'); temporary.remove();
+          if (!copied) throw new Error('copy unavailable');
+        }
+        showToast('Ссылка скопирована');
+      } catch (_) { showToast('Не удалось скопировать — скопируй адрес браузера'); }
+    });
+    footer.appendChild(document.createElement('br')); footer.appendChild(copyButton);
+  }
 })();
 </script>
 
@@ -708,10 +871,225 @@ document.querySelectorAll('.link-card').forEach((el,i)=>el.style.animationDelay=
   toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
   backdrop.addEventListener('click', () => setOpen(false));
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false); });
-  menu.addEventListener('click', event => { if (event.target.closest('button')) { /* Keep menu open so multiple settings can be adjusted. */ } });
+  menu.addEventListener('click', event => {
+    const link = event.target.closest('a[href^="#"]');
+    if (link) setOpen(false);
+  });
   window.addEventListener('resize', () => { if (window.innerWidth > 700 && toggle.getAttribute('aria-expanded') === 'true') setOpen(false); }, {passive:true});
 })();
 </script>
+
+<style id="mrtsyler-extra-style">
+#mts-progress{position:fixed;z-index:9998;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,#ff1744,#a855f7,#4f8cff);box-shadow:0 0 12px #ff1744;pointer-events:none;transition:width .08s linear}
+#mts-tools{position:fixed;z-index:9997;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:flex-end;gap:9px;font:600 12px/1.4 system-ui,sans-serif;letter-spacing:0}
+#mts-tools button{font:inherit;color:#fff;border:1px solid #ffffff2b;background:#111117eF;backdrop-filter:blur(14px);border-radius:13px;padding:11px 13px;box-shadow:0 8px 28px #0008;cursor:pointer;touch-action:manipulation}
+#mts-tools button:focus-visible,#mts-panel textarea:focus-visible{outline:2px solid #ff3158;outline-offset:3px}
+#mts-tools #mts-open{background:linear-gradient(135deg,#e50935,#8b1cf5);border:0;font-weight:800;min-width:48px;min-height:46px}
+#mts-panel{display:none;width:min(320px,calc(100vw - 28px));padding:15px;border:1px solid #ff315855;border-radius:18px;background:#0c0c12f5;backdrop-filter:blur(18px);box-shadow:0 15px 50px #000b;color:#fff}
+#mts-panel.open{display:block;animation:mts-in .18s ease-out}
+#mts-panel h3{font-size:14px;margin:0 0 10px;color:#ff526d}
+#mts-panel p{font-size:12px;line-height:1.6;color:#dedee8;margin:0 0 12px}
+#mts-panel textarea{display:block;width:100%;min-height:92px;resize:vertical;background:#171720;color:#fff;border:1px solid #ffffff24;border-radius:10px;padding:10px;font:12px/1.5 system-ui,sans-serif}
+#mts-panel .mts-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+#mts-panel .mts-row button{flex:1;min-width:90px;padding:9px 8px;background:#1a1a24}
+#mts-panel .mts-small{font-size:10px;color:#9696a8;margin-top:7px}
+body.mts-focus .link-card,body.mts-focus .links,body.mts-focus .socials,body.mts-focus .footer{transition:opacity .2s}
+body.mts-focus .link-card{opacity:.28}body.mts-focus .link-card:hover{opacity:1}
+@keyframes mts-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#mts-panel.open{animation:none}#mts-progress{transition:none}}
+
+/* Performance pass: preserve the visual style while reducing repaint and GPU work. */
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body::before{inset:0;background-size:cover;background-position:center;background-attachment:fixed}
+.ultra-btn,.back-top,.toast,#mts-tools button,#mts-panel{backdrop-filter:none;-webkit-backdrop-filter:none}
+.ultra-btn{box-shadow:0 2px 10px rgba(255,20,70,.07)}
+.ultra-btn:hover{box-shadow:0 4px 14px rgba(255,20,70,.13)}
+.toast{box-shadow:0 4px 16px rgba(0,0,0,.35)}
+.scroll-progress,#mts-progress{box-shadow:none}
+.link-card::after{transition:opacity .15s}
+.side-portraits{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;contain:layout paint;}
+.side-portrait{position:absolute;top:50%;width:clamp(150px,18vw,285px);height:min(72vh,720px);object-fit:cover;border:1px solid rgba(255,35,80,.28);border-radius:22px;opacity:.25;filter:saturate(.8);box-shadow:0 0 30px rgba(255,20,70,.12);transform:translateY(-50%);}
+.side-portrait-left{left:clamp(8px,2.2vw,32px);object-position:42% center;mask-image:linear-gradient(to bottom,transparent,black 14%,black 86%,transparent);}
+.side-portrait-right{right:clamp(8px,2.2vw,32px);object-position:58% center;mask-image:linear-gradient(to bottom,transparent,black 14%,black 86%,transparent);}
+@media(min-width:1200px){.side-portrait{opacity:.3}.container,.main,.content{position:relative;z-index:1}}
+@media(max-width:1050px){.side-portrait{width:140px;height:54vh;opacity:.14}.side-portrait-left{left:0}.side-portrait-right{right:0}}
+@media(max-width:700px){.side-portraits{display:none}.hero .avatar{animation:avatarFloat 7s ease-in-out infinite}.hero h1{animation:none;text-shadow:0 0 12px rgba(255,20,70,.18)}.live-dot{animation-duration:2.4s}.matrix-mode.on{animation:none}.link-card::before{display:none}.link-card::after{display:none}.ultra-btn{transition:background-color .15s,border-color .15s}.back-top{backdrop-filter:none}}
+@media(hover:none){.link-card:hover::before{left:-80%}.link-card:hover::after{opacity:0}.ultra-btn:hover{transform:none}.fx-particles,.fx-scan{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.side-portrait,.hero .avatar,.hero h1,.live-dot{animation:none!important}.fx-particles,.fx-scan,.matrix-mode{display:none!important}}
+</style>
+<div id="mts-progress" aria-hidden="true"></div>
+<div id="mts-tools">
+  <section id="mts-panel" aria-label="Инструменты MrTSyler" aria-hidden="true">
+    <h3>✦ MR.TSYLER TOOLS</h3>
+    <p id="mts-quote">Загружаем случайную мысль…</p>
+    <div class="mts-row">
+      <button type="button" id="mts-quote-btn">✧ Другая мысль</button>
+      <button type="button" id="mts-focus-btn" aria-pressed="false">◉ Режим фокуса</button>
+    </div>
+    <h3 style="margin-top:14px">Быстрые настройки</h3>
+    <div class="mts-switch-list" aria-label="Настройки отображения">
+      <div class="mts-switch-row"><span><b>Размытый фон</b><small>Кинематографичный фон</small></span><button class="ios-switch" id="mts-blur-switch" type="button" role="switch" aria-checked="true" aria-label="Размытый фон"><i></i></button></div>
+      <div class="mts-switch-row"><span><b>Звуки интерфейса</b><small>Короткие сигналы кнопок</small></span><button class="ios-switch" id="mts-sound-switch" type="button" role="switch" aria-checked="true" aria-label="Звуки интерфейса"><i></i></button></div>
+      <div class="mts-switch-row"><span><b>Эффекты</b><small>Декоративные анимации</small></span><button class="ios-switch" id="mts-fx-switch" type="button" role="switch" aria-checked="true" aria-label="Эффекты"><i></i></button></div>
+      <div class="mts-switch-row"><span><b>Matrix</b><small>Цифровой режим</small></span><button class="ios-switch" id="mts-matrix-switch" type="button" role="switch" aria-checked="false" aria-label="Matrix"><i></i></button></div>
+    </div>
+    <h3 style="margin-top:16px">Мини-игра · Красная цель</h3>
+    <p>Нажми «Старт» и успей поймать как можно больше целей за 15 секунд.</p>
+    <div class="mts-game-stats"><span>Очки <b id="mts-game-score">0</b></span><span>Время <b id="mts-game-time">15</b>с</span><span>Рекорд <b id="mts-game-best">0</b></span></div>
+    <div id="mts-game" aria-label="Поле мини-игры"><button id="mts-game-target" type="button" aria-label="Поймать цель" hidden>✦</button><span id="mts-game-hint">Нажми «Старт», чтобы начать</span></div>
+    <div class="mts-row"><button type="button" id="mts-game-start">▶ Старт</button><button type="button" id="mts-game-reset">↻ Сброс</button></div>
+    <h3 style="margin-top:14px">Локальные заметки</h3>
+    <textarea id="mts-notes" maxlength="3000" placeholder="Идеи для сайта, видео или проектов…" aria-label="Локальные заметки"></textarea>
+    <div class="mts-row"><button type="button" id="mts-save">Сохранить заметку</button><button type="button" id="mts-clear">Очистить</button></div>
+    <div class="mts-small">Заметки хранятся только в этом браузере на этом устройстве.</div>
+  </section>
+  <button type="button" id="mts-open" aria-expanded="false" aria-controls="mts-panel" aria-label="Открыть инструменты сайта">✦</button>
+  <button type="button" id="mts-top" aria-label="Прокрутить наверх" style="display:none">↑ Наверх</button>
+</div>
+<script id="mrtsyler-extra-script">
+(()=>{
+ const $=id=>document.getElementById(id);
+ const panel=$('mts-panel'),open=$('mts-open'),top=$('mts-top'),progress=$('mts-progress');
+ const quotes=[
+  'Создавай так, чтобы тебя было невозможно спутать с кем-то другим.',
+  'Большие проекты начинаются с маленького рабочего шага.',
+  'Не копируй чужой путь — прокладывай собственный.',
+  'Ошибки в коде — это подсказки, а не конец проекта.',
+  'Идея становится реальностью, когда ты открываешь редактор и начинаешь.',
+  'Твой стиль — твоя подпись. MrTSyler.',
+  'Лучшее обновление — то, которое делает сайт удобнее.'
+ ];
+ const quote=$('mts-quote');let last=-1;
+ function newQuote(){let n=Math.floor(Math.random()*quotes.length);if(quotes.length>1&&n===last)n=(n+1)%quotes.length;last=n;quote.textContent='“'+quotes[n]+'”'}
+ function toast(message){let t=$('mts-toast');if(!t){t=document.createElement('div');t.id='mts-toast';Object.assign(t.style,{position:'fixed',zIndex:10000,left:'50%',bottom:'90px',transform:'translateX(-50%)',background:'#171720',border:'1px solid #ff315866',borderRadius:'12px',padding:'10px 14px',color:'#fff',font:'600 12px system-ui',boxShadow:'0 8px 24px #0009',maxWidth:'calc(100vw - 32px)',textAlign:'center'});document.body.appendChild(t)}t.textContent=message;t.style.display='block';clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.display='none',1900)}
+ function setPanel(state){panel.classList.toggle('open',state);panel.setAttribute('aria-hidden',String(!state));open.setAttribute('aria-expanded',String(state));open.setAttribute('aria-label',state?'Закрыть инструменты':'Открыть инструменты');open.textContent=state?'×':'✦'}
+ open.addEventListener('click',()=>setPanel(!panel.classList.contains('open')));
+ $('mts-quote-btn').addEventListener('click',newQuote);
+ $('mts-focus-btn').addEventListener('click',()=>{const enabled=document.body.classList.toggle('mts-focus');$('mts-focus-btn').setAttribute('aria-pressed',String(enabled));$('mts-focus-btn').textContent=enabled?'◉ Выключить фокус':'◉ Режим фокуса';toast(enabled?'Режим фокуса включён':'Режим фокуса выключен')});
+ const notes=$('mts-notes');try{notes.value=localStorage.getItem('mts_site_notes_v1')||''}catch(e){}
+ $('mts-save').addEventListener('click',()=>{try{localStorage.setItem('mts_site_notes_v1',notes.value);toast('Заметка сохранена на устройстве')}catch(e){toast('Браузер запретил локальное сохранение')}});
+ $('mts-clear').addEventListener('click',()=>{notes.value='';try{localStorage.removeItem('mts_site_notes_v1')}catch(e){}toast('Заметки очищены')});
+ function updateScroll(){const max=document.documentElement.scrollHeight-innerHeight;progress.style.width=(max>0?Math.min(100,scrollY/max*100):0)+'%';top.style.display=scrollY>420?'block':'none'}
+ addEventListener('scroll',updateScroll,{passive:true});addEventListener('resize',updateScroll,{passive:true});top.addEventListener('click',()=>scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('open'))setPanel(false);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='j'){e.preventDefault();setPanel(!panel.classList.contains('open'))}});
+  // Persistent blur preference; static background blur only (no animation loop).
+  const blurSwitch=$('mts-blur-switch'),soundSwitch=$('mts-sound-switch'),fxSwitch=$('mts-fx-switch'),matrixSwitch=$('mts-matrix-switch');
+  function readPref(key,fallback){try{const v=localStorage.getItem(key);return v===null?fallback:v==='1'}catch(e){return fallback}}
+  function writePref(key,value){try{localStorage.setItem(key,value?'1':'0')}catch(e){}}
+  function setSwitch(button,value){if(!button)return;button.setAttribute('aria-checked',String(!!value))}
+  function setBlur(value){document.body.classList.toggle('mts-bg-blur',!!value);setSwitch(blurSwitch,value);writePref('mts_blur_v1',value)}
+  setBlur(readPref('mts_blur_v1',true));
+  blurSwitch?.addEventListener('click',()=>setBlur(blurSwitch.getAttribute('aria-checked')!=='true'));
+  function syncSwitches(){setSwitch(soundSwitch,!!$('soundBtn')?.classList.contains('active'));setSwitch(fxSwitch,!!$('fxBtn')?.classList.contains('active'));setSwitch(matrixSwitch,!!$('matrixBtn')?.classList.contains('active'))}
+  soundSwitch?.addEventListener('click',()=>{$('soundBtn')?.click();syncSwitches()});
+  fxSwitch?.addEventListener('click',()=>{$('fxBtn')?.click();syncSwitches()});
+  matrixSwitch?.addEventListener('click',()=>{$('matrixBtn')?.click();syncSwitches()});
+  ['soundBtn','fxBtn','matrixBtn'].forEach(id=>$(id)?.addEventListener('click',()=>setTimeout(syncSwitches,0)));
+  syncSwitches();
+
+  // Self-contained 15-second tap game. The timer exists only during an active round.
+  const game=$('mts-game'),target=$('mts-game-target'),start=$('mts-game-start'),reset=$('mts-game-reset');
+  const scoreEl=$('mts-game-score'),timeEl=$('mts-game-time'),bestEl=$('mts-game-best'),hint=$('mts-game-hint');
+  let score=0,seconds=15,gameTimer=0,playing=false;
+  let best=0;try{best=Number(localStorage.getItem('mts_game_best_v1'))||0}catch(e){}
+  bestEl.textContent=String(best);
+  function placeTarget(){const maxX=Math.max(22,game.clientWidth-22),maxY=Math.max(22,game.clientHeight-22);target.style.left=(22+Math.random()*Math.max(0,maxX-22))+'px';target.style.top=(22+Math.random()*Math.max(0,maxY-22))+'px'}
+  function endGame(){playing=false;if(gameTimer)clearInterval(gameTimer);gameTimer=0;target.hidden=true;hint.hidden=false;hint.textContent='Раунд завершён · Очки: '+score;start.textContent='↻ Играть ещё';if(score>best){best=score;bestEl.textContent=String(best);try{localStorage.setItem('mts_game_best_v1',String(best))}catch(e){}}}
+  function startGame(){if(gameTimer)clearInterval(gameTimer);score=0;seconds=15;playing=true;scoreEl.textContent='0';timeEl.textContent='15';hint.hidden=true;target.hidden=false;start.textContent='Игра идёт…';placeTarget();gameTimer=setInterval(()=>{if(!playing)return;seconds--;timeEl.textContent=String(seconds);if(seconds<=0)endGame()},1000)}
+  target.addEventListener('click',()=>{if(!playing)return;score++;scoreEl.textContent=String(score);placeTarget()});
+  start.addEventListener('click',()=>{if(!playing)startGame()});
+  reset.addEventListener('click',()=>{if(gameTimer)clearInterval(gameTimer);gameTimer=0;playing=false;score=0;seconds=15;scoreEl.textContent='0';timeEl.textContent='15';target.hidden=true;hint.hidden=false;hint.textContent='Нажми «Старт», чтобы начать';start.textContent='▶ Старт'});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing)endGame()});
+  newQuote();updateScroll();
+})();
+</script>
+
+
+<style id="mrtsyler-performance-patch">
+/* Performance patch: preserve the visual style, remove costly paint effects on small/low-power screens. */
+*,*::before,*::after{ -webkit-tap-highlight-color:transparent; }
+img{content-visibility:auto}
+@media (max-width: 900px), (hover: none), (pointer: coarse){
+  html{scroll-behavior:auto!important}
+  /* Avoid full-screen animated/blurred layers on mobile. */
+  .ambient,.ambient2,.fx-particles,.fx-scan,.fx-cursor,.fx-sparks,.side-portraits,body::after{display:none!important}
+  body::before{animation:none!important}
+  .glass,.description,.subscribe,.site-menu,.menu-backdrop,.link-card,.ultra-btn,.theme-toggle,.back-top{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .glass,.description,.link-card,.subscribe{box-shadow:0 4px 14px rgba(0,0,0,.2)!important}
+  .avatar,.hero .avatar,.hero h1,.hero::before,.hero::after,.live-dot,.app-icon,.subscribe::before,.link-card::before,.link-card::after{animation:none!important;filter:none!important}
+  .fx-reveal{opacity:1!important;transform:none!important;filter:none!important;transition:opacity .18s ease!important}
+  .link-card{transform:none!important;transition:background-color .16s ease,border-color .16s ease!important;contain:layout paint}
+  .link-card:hover,.link-card:active,.subscribe:hover,.subscribe:active{transform:none!important}
+  .side-portraits{display:none!important}
+  .fx-particle{display:none!important}
+}
+/* Desktop keeps the polished hover and entry animations, but avoids animating expensive shadows. */
+@media (min-width:901px) and (hover:hover){
+  .avatar{animation:avatarFloat 7s ease-in-out infinite!important}
+  .link-card{will-change:transform}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+
+<style id="mrtsyler-final-quality-patch">
+/* Final performance and accessibility safeguards for both mobile and desktop. */
+html { scroll-padding-top: 16px; }
+button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; }
+.link-card:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid #ff4d79; outline-offset: 3px;
+}
+.search-hidden { display: none !important; }
+.menu-backdrop[hidden] { display: none !important; }
+@media (max-width: 900px), (hover: none), (pointer: coarse) {
+  /* Avoid continuous GPU-heavy effects on phones/tablets. Keep short UI transitions. */
+  body::before { animation: none !important; filter: none !important; }
+  body::after, .ambient, .ambient2, .side-portraits,
+  .fx-particles, .fx-scan, .fx-cursor, .fx-sparks { display: none !important; animation: none !important; }
+  .hero::before, .hero::after, .avatar::before, .avatar::after,
+  .app-icon::after, .link-card::before, .link-card::after,
+  .subscribe::before, .matrix-mode.on { animation: none !important; filter: none !important; }
+  .avatar, .hero .avatar, .hero h1, .hero h2, .hero p, .live-dot,
+  .link-card, .subscribe, .app-icon { animation: none !important; }
+  .link-card, .glass, .description, .site-menu, .menu-backdrop, .ultra-btn,
+  .theme-toggle, .back-top, .toast, #mts-tools button, #mts-panel {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  .link-card { transform: none !important; box-shadow: 0 5px 16px rgba(0,0,0,.18); }
+  .link-card:active, button:active { transform: scale(.99); }
+  .matrix-mode { mix-blend-mode: normal; }
+}
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .link-card { will-change: transform; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* iOS-like settings and lightweight mini-game */
+body.mts-bg-blur::before{filter:blur(7px) brightness(.58)!important;transform:scale(1.035);}
+@media(max-width:900px),(pointer:coarse){body.mts-bg-blur::before{filter:blur(4px) brightness(.55)!important;transform:scale(1.025)}}
+#mts-panel{max-height:min(78vh,720px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#494956 transparent}
+.mts-switch-list{display:grid;gap:2px;border:1px solid #ffffff12;background:#ffffff05;border-radius:13px;padding:4px}
+.mts-switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 7px;border-bottom:1px solid #ffffff0d}
+.mts-switch-row:last-child{border-bottom:0}
+.mts-switch-row span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.mts-switch-row b{font-size:12px;font-weight:700;color:#f7f7fb}
+.mts-switch-row small{font-size:10px;line-height:1.3;color:#a4a4b5;font-weight:400}
+#mts-panel .ios-switch{flex:0 0 44px;min-width:44px;width:44px;height:26px;padding:2px;border:0;border-radius:99px;background:#555560;box-shadow:none;position:relative;transition:background-color .18s ease}
+#mts-panel .ios-switch i{display:block;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0006;transform:translateX(0);transition:transform .18s ease}
+#mts-panel .ios-switch[aria-checked="true"]{background:#32d74b}
+#mts-panel .ios-switch[aria-checked="true"] i{transform:translateX(18px)}
+#mts-panel .ios-switch:focus-visible{outline:2px solid #ff526d;outline-offset:3px}
+.mts-game-stats{display:flex;justify-content:space-between;gap:5px;margin:8px 0;font-size:10px;color:#bcbcca}
+.mts-game-stats b{color:#fff;font-size:12px}
+#mts-game{height:150px;position:relative;overflow:hidden;border:1px solid #ffffff1c;border-radius:13px;background:radial-gradient(ellipse at center,#1b101b,#09090e 72%);touch-action:manipulation;contain:layout paint}
+#mts-game-target{position:absolute;left:50%;top:50%;width:42px;height:42px;min-width:42px;padding:0;border:1px solid #ff7894;border-radius:50%;background:linear-gradient(145deg,#ff315b,#8d123e);box-shadow:0 0 18px #ff174466;color:#fff;font-size:21px;transform:translate(-50%,-50%);transition:left .08s,top .08s}
+#mts-game-target[hidden]{display:none!important}
+#mts-game-hint{position:absolute;inset:0;display:grid;place-items:center;padding:12px;text-align:center;color:#9999ac;font-size:11px;pointer-events:none}
+@media(prefers-reduced-motion:reduce){#mts-panel .ios-switch,#mts-panel .ios-switch i,#mts-game-target{transition:none}}
+</style>
 
 </body>
 </html>
